@@ -4,7 +4,7 @@
 # Constants - Change these to change the simulation parameters
 
 RAYS = 360 # Number of rays to calculate
-NUM_OBSTACLES = 20 # Number of Obstacles to generate
+NUM_OBSTACLES = 2 # Number of Obstacles to generate
 
 DEG_TO_RAD = Math::PI / 180 # Convert Degrees to Radians for use with Math.sin and Math.cos. Multiply by this constant to convert
 
@@ -15,6 +15,8 @@ def once(args)
   $do_debug ||= false
   $obstacle_lines ||= []
   $obstacle_points ||= []
+  $rays ||= []
+  $end_points ||= []
 
   $obstacles = NUM_OBSTACLES.map do # Create an array with hash rectangles of random sizes and locations
     { x: randr(0, 1280), y: randr(0, 720), w: randr(20, 100), h: randr(20, 100), r: 127, g: 0, b: 0, primitive_marker: :solid }
@@ -89,26 +91,29 @@ def qol(args)
 end
 
 def update_rays(args)
-  if $mouse_old != { x: args.inputs.mouse.x.round, y: args.inputs.mouse.y.round }
-    $mouse_old = { x: args.inputs.mouse.x.round, y: args.inputs.mouse.y.round }
+  return unless $mouse_old != { x: args.inputs.mouse.x.round, y: args.inputs.mouse.y.round }
+  $mouse_old = { x: args.inputs.mouse.x.round, y: args.inputs.mouse.y.round }
 
-    args.render_target(:rays).clear
-
-    args.render_target(:rays).lines << $obstacle_points.map do |point|
-      $mouse_old.merge(x2: point[:x], y2: point[:y])
-    end
-    
-    calc_rays(args)
+  $end_points = []
+  $rays = $obstacle_points.map do |point|
+    $mouse_old.merge(x2: point[:x], y2: point[:y])
   end
-end
 
-def calc_rays(args)
+  $rays.each do |ray|
+    hits = []
+    $obstacle_lines.each do |line|
+      intersect = args.geometry.line_intersect(line, ray)
+      hits << intersect if args.geometry.intersect_rect? args.geometry.line_rect(line), intersect.append([1, 1])
+    end
+    end_point << hits.min
+    $end_points << [end_point[0].round, end_point[0].round, end_point[0].round, end_point[0].round]
+  end
 
-    $obstacle_points.each { |point|
-      ray_line = $mouse_old.merge(x2: point[:x], y2: point[:y])
-      $obstacle_lines.each { |line|
-        intersect = args.geometry.line_intersect(line, ray_line)
-        puts intersect
-        }
-      }
+  puts $end_points
+  # $rays = $end_points.map do |point|
+  #  point.append($mouse_old[:x], $mouse_old[:y])
+  #end
+
+  args.render_target(:rays).clear
+  args.render_target(:rays).lines << $rays
 end
