@@ -1,0 +1,13 @@
+builds/
+logs/
+exceptions/
+fonts/
+sprites/circle/
+sprites/hexagon/
+sprites/isometric/
+sprites/square/
+sprites/tile
+sounds/
+sprites/
+data/
+lines.png
