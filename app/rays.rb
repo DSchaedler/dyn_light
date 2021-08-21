@@ -25,11 +25,11 @@ class Rays
     end
 
     @obstacles.each do |rect|
-      @obstacle_lines.concat RayGeometry.rect_lines(rect)
+      @obstacle_lines.concat RayGeometry.rect_lines(rect: rect)
     end
 
     @obstacles.each do |rect|
-      @obstacle_points.concat RayGeometry.rect_points(rect)
+      @obstacle_points.concat RayGeometry.rect_points(rect: rect)
     end
   end
 

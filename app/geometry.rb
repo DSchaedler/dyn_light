@@ -3,6 +3,8 @@ DEG_TO_RAD = Math::PI / 180
 
 # Provides geometry functions "missing" from args.geometry
 module RayGeometry
+  attr_gtk
+
   # point: {x: num, y: num}, distance: num, angle: num - degrees | Returns point {x: float, y: float}
   def find_point(point:, distance:, angle:)
     x = point[0] + distance * Math.cos(angle * DEG_TO_RAD)
@@ -40,7 +42,7 @@ module RayGeometry
   end
 
   # line(1,2): {x: num, y: num, x2: num, y2: num} | Returns point {x: float, y: float}, nil
-  def intersect(line1, line2)
+  def intersect(line1:, line2:)
     slope_line1 = RayGeometry.slope(line1)
     y_intercept1 = RayGeometry.y_intercept(slope_line1, line1)
 
@@ -63,8 +65,18 @@ module RayGeometry
     { x: x, y: y }
   end
 
+  # TODO
+  def segment_intersect(line1:, line2:)
+    intersect = intersect(line1: line1, line2: line2)
+
+    #intersect
+    #$gtk.args.geometry.intersect_rect()
+
+    #return intersect if
+  end
+
   # Convert a hash rectangle into an array of hash lines
-  def rect_lines(rect)
+  def rect_lines(rect:)
     [
       { x: rect[:x], y: rect[:y], x2: rect[:x] + rect[:w], y2: rect[:y] },
       { x: rect[:x], y: rect[:y], x2: rect[:x], y2: rect[:y] + rect[:h] },
@@ -74,7 +86,7 @@ module RayGeometry
   end
 
   # Convert a hash rectangle into an array of hash points
-  def rect_points(rect)
+  def rect_points(rect:)
     [
       { x: rect[:x], y: rect[:y] },
       { x: rect[:x], y: rect[:y] + rect[:h] },
