@@ -8,20 +8,25 @@ require 'app/geometry.rb'
 #---
 
 def tick(args)
-  $rays_object ||= Rays.new(args) # rubocop:disable Style/GlobalVars
-  $rays_object.tick(args) # rubocop:disable Style/GlobalVars
+  $rays_object ||= Rays.new(args)
+  $rays_object.tick(args)
 
-  qol(args)
+  screenshots(args)
+  debug(args)
 end
 
 #---
 
-def qol(args)
-  args.outputs.screenshots << { x: 0, y: 0, w: 1280, h: 720, path: 'lines.png' } if args.inputs.keyboard.key_up.escape
-
+def debug(args)
   $do_debug ||= false
   $do_debug = !$do_debug if args.keyboard.key_up.d
   args.outputs.debug << args.gtk.framerate_diagnostics_primitives if $do_debug
+end
+
+def screenshots(args)
+  return unless args.inputs.keyboard.key_up.escape
+
+  args.outputs.screenshots << { x: 0, y: 0, w: 1280, h: 720, path: 'lines.png' }
 end
 
 # Generate a random integer between min and max

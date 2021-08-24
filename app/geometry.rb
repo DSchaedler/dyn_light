@@ -1,26 +1,22 @@
-# Convert Degrees to Radians for use with Math.sin and Math.cos. Multiply by this constant to convert
 DEG_TO_RAD = Math::PI / 180
 
 # Provides geometry functions "missing" from args.geometry
 module RayGeometry
   attr_gtk
 
-  # point: {x: num, y: num}, distance: num, angle: num - degrees | Returns point {x: float, y: float}
   def find_point(point:, distance:, angle:)
-    x = point[0] + distance * Math.cos(angle * DEG_TO_RAD)
-    y = point[1] + distance * Math.sin(angle * DEG_TO_RAD)
+    x = point[:x] + distance * Math.cos(angle * DEG_TO_RAD)
+    y = point[:y] + distance * Math.sin(angle * DEG_TO_RAD)
     { x: x, y: y }
   end
 
-  # line: line: {x: num, y: num, x2: num, y2: num} | Retruns float, nil
   def slope(line:)
     return nil if line[:x] == line[:x2]
     (line[:y] - line[:y2]).fdiv(line[:x] - line[:x2])
   end
 
-  # line: {x: num, y: num, x2: num, y2: num} | Returns float, nil
   def y_intercept(line:)
-    slope = RayGeometry.slope(line)
+    slope = RayGeometry.slope(line: line)
     if slope.nil?
       nil
     else
@@ -29,7 +25,6 @@ module RayGeometry
     end
   end
 
-  # line: {x: num, y: num, x2: num, y2: num} | Returns float, nil
   def x_intercept(line:)
     slope = RayGeometry.slope(line)
     if slope.nil? || slope.zero?
@@ -37,17 +32,16 @@ module RayGeometry
     else
       # x = (y - b) / m
       b = RayGeometry.y_intercept(slope: slope, line: line)
-      x = (line[:y] - b) / slope
+      (line[:y] - b) / slope
     end
   end
 
-  # line(1,2): {x: num, y: num, x2: num, y2: num} | Returns point {x: float, y: float}, nil
   def intersect(line1:, line2:)
-    slope_line1 = RayGeometry.slope(line1)
-    y_intercept1 = RayGeometry.y_intercept(slope_line1, line1)
+    slope_line1 = RayGeometry.slope(line: line1)
+    y_intercept1 = RayGeometry.y_intercept(line: line1)
 
-    slope_line2 = RayGeometry.slope(line2)
-    y_intercept2 = RayGeometry.y_intercept(slope_line2, line2)
+    slope_line2 = RayGeometry.slope(line: line2)
+    y_intercept2 = RayGeometry.y_intercept(line: line2)
 
     return nil unless slope_line1 != slope_line2
 
@@ -67,15 +61,26 @@ module RayGeometry
 
   # TODO
   def segment_intersect(line1:, line2:)
-    intersect = intersect(line1: line1, line2: line2)
+    intersection = RayGeometry.intersect(line1: line1, line2: line2)
 
-    #intersect
-    #$gtk.args.geometry.intersect_rect()
+    intersect_box = intersection.merge(w: 1, h: 1)
 
-    #return intersect if
+    line1_box = $gtk.args.geometry.line_rect(line1)
+    line2_box = $gtk.args.geometry.line_rect(line2)
+
+    line1_box[:w] = 1 if line1_box[:w] == 0
+    line1_box[:h] = 1 if line1_box[:h] == 0
+
+    line2_box[:w] = 1 if line2_box[:w] == 0
+    line2_box[:h] = 1 if line2_box[:h] == 0
+
+
+    check_line1 = $gtk.args.geometry.intersect_rect?(intersect_box, line1_box)
+    check_line2 = $gtk.args.geometry.intersect_rect?(intersect_box, line2_box)
+
+    return intersection if check_line1 && check_line2
   end
 
-  # Convert a hash rectangle into an array of hash lines
   def rect_lines(rect:)
     [
       { x: rect[:x], y: rect[:y], x2: rect[:x] + rect[:w], y2: rect[:y] },
@@ -85,7 +90,6 @@ module RayGeometry
     ]
   end
 
-  # Convert a hash rectangle into an array of hash points
   def rect_points(rect:)
     [
       { x: rect[:x], y: rect[:y] },
